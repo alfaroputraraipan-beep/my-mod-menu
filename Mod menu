@@ -1,4 +1,4 @@
--- [[ ROBLOX MOD MENU - REAL GOD MODE VERSION ]] --
+-- [[ ROBLOX MOD MENU - GHOST GOD MODE VERSION ]] --
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -6,7 +6,7 @@ local Title = Instance.new("TextLabel")
 local SpeedButton = Instance.new("TextButton")
 local JumpButton = Instance.new("TextButton")
 local FlyButton = Instance.new("TextButton")
-local GodButton = Instance.new("TextButton") 
+local GhostButton = Instance.new("TextButton") 
 
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
@@ -24,7 +24,7 @@ Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Title.Size = UDim2.new(0, 200, 0, 40)
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "Delta Helper Menu v2"
+Title.Text = "Delta Helper v3"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 
@@ -58,58 +58,61 @@ FlyButton.Text = "Fly: OFF"
 FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 FlyButton.TextSize = 16
 
-GodButton.Name = "GodButton"
-GodButton.Parent = MainFrame
-GodButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-GodButton.Position = UDim2.new(0, 10, 0, 240)
-GodButton.Size = UDim2.new(0, 180, 0, 40)
-GodButton.Font = Enum.Font.SourceSans
-GodButton.Text = "Bypass Laser: OFF"
-GodButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-GodButton.TextSize = 16
+GhostButton.Name = "GhostButton"
+GhostButton.Parent = MainFrame
+GhostButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+GhostButton.Position = UDim2.new(0, 10, 0, 240)
+GhostButton.Size = UDim2.new(0, 180, 0, 40)
+GhostButton.Font = Enum.Font.SourceSans
+GhostButton.Text = "Ghost Mode: OFF"
+GhostButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+GodButton = GhostButton -- Penyelarasan variabel
+GhostButton.TextSize = 16
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local SpeedToggle = false
 local JumpToggle = false
 local FlyToggle = false
-local GodToggle = false
+local GhostToggle = false
 local BodyVelocity = nil
 
--- Fungsi untuk menghapus detektor laser di sekitar karakter
-local function BypassLasers()
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("TouchTransmitter") and v.Parent and (v.Parent.Name == "KillBrick" or v.Parent.Name == "Laser" or v.Parent.Name == "lava") then
-            v:Destroy() -- Menghancurkan sensor mematikan pada laser
-        end
-    end
-end
-
+-- Loop Utama Fisika Karakter
 game:GetService("RunService").RenderStepped:Connect(function()
     local Character = LocalPlayer.Character
-    if Character and Character:FindFirstChild("Humanoid") then
-        if SpeedToggle then Character.Humanoid.WalkSpeed = 100 end
-        if JumpToggle then 
-            Character.Humanoid.UseJumpPower = true
-            Character.Humanoid.JumpPower = 150 
-        end
-        if FlyToggle then
-            local RootPart = Character:FindFirstChild("HumanoidRootPart")
-            if RootPart then
-                if not BodyVelocity then
-                    BodyVelocity = Instance.new("BodyVelocity")
-                    BodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
-                    BodyVelocity.Parent = RootPart
+    if Character then
+        -- Fitur Tembus Dinding (Noclip) otomatis aktif saat mode Hantu dinyalakan
+        if GhostToggle then
+            for _, part in pairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
                 end
-                BodyVelocity.Velocity = Character.Humanoid.MoveDirection * 50 + Vector3.new(0, 2, 0)
             end
-        else
-            if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
         end
-        
-        -- Jika tombol aktif, terus-menerus matikan sensor laser baru yang muncul
-        if GodToggle then
-            BypassLasers()
+
+        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        if Humanoid then
+            if SpeedToggle then Humanoid.WalkSpeed = 100 end
+            if JumpToggle then 
+                Humanoid.UseJumpPower = true
+                Humanoid.JumpPower = 150 
+            end
+            
+            -- Logika Terbang (Fly)
+            if FlyToggle then
+                local RootPart = Character:FindFirstChild("HumanoidRootPart") or Character:FindFirstChild("UpperTorso") or Character:FindFirstChild("Torso")
+                if RootPart then
+                    if not BodyVelocity then
+                        BodyVelocity = Instance.new("BodyVelocity")
+                        BodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
+                        BodyVelocity.Parent = RootPart
+                    end
+                    local Camera = workspace.CurrentCamera
+                    BodyVelocity.Velocity = Camera.CFrame.LookVector * 60
+                end
+            else
+                if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
+            end
         end
     end
 end)
@@ -118,18 +121,12 @@ SpeedButton.MouseButton1Click:Connect(function()
     SpeedToggle = not SpeedToggle
     SpeedButton.Text = SpeedToggle and "Speed 100: ON" or "Speed 100: OFF"
     SpeedButton.BackgroundColor3 = SpeedToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
-    if not SpeedToggle and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = 16
-    end
 end)
 
 JumpButton.MouseButton1Click:Connect(function()
     JumpToggle = not JumpToggle
     JumpButton.Text = JumpToggle and "High Jump: ON" or "High Jump: OFF"
     JumpButton.BackgroundColor3 = JumpToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
-    if not JumpToggle and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.JumpPower = 50
-    end
 end)
 
 FlyButton.MouseButton1Click:Connect(function()
@@ -138,11 +135,29 @@ FlyButton.MouseButton1Click:Connect(function()
     FlyButton.BackgroundColor3 = FlyToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
 end)
 
-GodButton.MouseButton1Click:Connect(function()
-    GodToggle = not GodToggle
-    GodButton.Text = GodToggle and "Bypass Laser: ON" or "Bypass Laser: OFF"
-    GodButton.BackgroundColor3 = GodToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
-    if GodToggle then
-        BypassLasers()
+-- Deteksi Klik Tombol Ghost Mode (Real Anti Mati & Tembus Tembok)
+GhostButton.MouseButton1Click:Connect(function()
+    GhostToggle = not GhostToggle
+    if GhostToggle then
+        GhostButton.Text = "Ghost Mode: ON"
+        GhostButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        
+        -- Eksekusi Trik Hantu: Mematikan koneksi deteksi ke Server
+        local Character = LocalPlayer.Character
+        if Character and Character:FindFirstChild("Humanoid") then
+            local clone = Character.Humanoid:Clone()
+            Character.Humanoid:Destroy()
+            clone.Parent = Character
+            task.wait(0.1)
+            
+            -- Hidupkan fitur terbang secara otomatis agar tidak jatuh ke bawah peta
+            FlyToggle = true
+            FlyButton.Text = "Fly: ON"
+            FlyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        end
+    else
+        GhostButton.Text = "Ghost Mode: OFF"
+        GhostButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        -- Untuk menonaktifkan mode hantu, kamu cukup lakukan Reset Character di menu Roblox biasa
     end
 end)
