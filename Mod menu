@@ -1,18 +1,16 @@
--- [[ ROBLOX MOD MENU - TOWER ASSIST VERSION ]] --
+-- [[ ROBLOX MOD MENU - REAL GOD MODE VERSION ]] --
 
--- 1. MEMBUAT UI (ANTARMUKA)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
 local SpeedButton = Instance.new("TextButton")
 local JumpButton = Instance.new("TextButton")
 local FlyButton = Instance.new("TextButton")
-local GodButton = Instance.new("TextButton") -- Tombol Anti Mati
+local GodButton = Instance.new("TextButton") 
 
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- Mengatur Kotak Menu Utama
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -21,17 +19,15 @@ MainFrame.Size = UDim2.new(0, 200, 0, 310)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- Judul Menu
 Title.Name = "Title"
 Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Title.Size = UDim2.new(0, 200, 0, 40)
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "Delta Helper Menu"
+Title.Text = "Delta Helper Menu v2"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 
--- Tombol Speed 100
 SpeedButton.Name = "SpeedButton"
 SpeedButton.Parent = MainFrame
 SpeedButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -42,7 +38,6 @@ SpeedButton.Text = "Speed 100: OFF"
 SpeedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedButton.TextSize = 16
 
--- Tombol Lompat Tinggi
 JumpButton.Name = "JumpButton"
 JumpButton.Parent = MainFrame
 JumpButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -53,7 +48,6 @@ JumpButton.Text = "High Jump: OFF"
 JumpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 JumpButton.TextSize = 16
 
--- Tombol Melayang (Fly)
 FlyButton.Name = "FlyButton"
 FlyButton.Parent = MainFrame
 FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -64,19 +58,15 @@ FlyButton.Text = "Fly: OFF"
 FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 FlyButton.TextSize = 16
 
--- Tombol God Mode (Anti Mati)
 GodButton.Name = "GodButton"
 GodButton.Parent = MainFrame
 GodButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 GodButton.Position = UDim2.new(0, 10, 0, 240)
 GodButton.Size = UDim2.new(0, 180, 0, 40)
 GodButton.Font = Enum.Font.SourceSans
-GodButton.Text = "God Mode: OFF"
+GodButton.Text = "Bypass Laser: OFF"
 GodButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 GodButton.TextSize = 16
-
-
--- 2. LOGIKA DAN FUNGSI FITUR
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -86,21 +76,23 @@ local FlyToggle = false
 local GodToggle = false
 local BodyVelocity = nil
 
+-- Fungsi untuk menghapus detektor laser di sekitar karakter
+local function BypassLasers()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("TouchTransmitter") and v.Parent and (v.Parent.Name == "KillBrick" or v.Parent.Name == "Laser" or v.Parent.Name == "lava") then
+            v:Destroy() -- Menghancurkan sensor mematikan pada laser
+        end
+    end
+end
+
 game:GetService("RunService").RenderStepped:Connect(function()
     local Character = LocalPlayer.Character
     if Character and Character:FindFirstChild("Humanoid") then
-        -- Logika Speed
-        if SpeedToggle then
-            Character.Humanoid.WalkSpeed = 100
-        end
-        
-        -- Logika Jump
-        if JumpToggle then
+        if SpeedToggle then Character.Humanoid.WalkSpeed = 100 end
+        if JumpToggle then 
             Character.Humanoid.UseJumpPower = true
-            Character.Humanoid.JumpPower = 150
+            Character.Humanoid.JumpPower = 150 
         end
-        
-        -- Logika Melayang (Fly)
         if FlyToggle then
             local RootPart = Character:FindFirstChild("HumanoidRootPart")
             if RootPart then
@@ -112,78 +104,45 @@ game:GetService("RunService").RenderStepped:Connect(function()
                 BodyVelocity.Velocity = Character.Humanoid.MoveDirection * 50 + Vector3.new(0, 2, 0)
             end
         else
-            if BodyVelocity then
-                BodyVelocity:Destroy()
-                BodyVelocity = nil
-            end
+            if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
         end
         
-        -- Logika God Mode Sederhana (Mengunci nyawa agar tidak berkurang dari rintangan biasa)
+        -- Jika tombol aktif, terus-menerus matikan sensor laser baru yang muncul
         if GodToggle then
-            Character.Humanoid.Health = Character.Humanoid.MaxHealth
+            BypassLasers()
         end
     end
 end)
 
--- Deteksi Klik Tombol Speed
 SpeedButton.MouseButton1Click:Connect(function()
     SpeedToggle = not SpeedToggle
-    if SpeedToggle then
-        SpeedButton.Text = "Speed 100: ON"
-        SpeedButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    else
-        SpeedButton.Text = "Speed 100: OFF"
-        SpeedButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = 16
-        end
+    SpeedButton.Text = SpeedToggle and "Speed 100: ON" or "Speed 100: OFF"
+    SpeedButton.BackgroundColor3 = SpeedToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
+    if not SpeedToggle and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16
     end
 end)
 
--- Deteksi Klik Tombol Jump
 JumpButton.MouseButton1Click:Connect(function()
     JumpToggle = not JumpToggle
-    if JumpToggle then
-        JumpButton.Text = "High Jump: ON"
-        JumpButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    else
-        JumpButton.Text = "High Jump: OFF"
-        JumpButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.JumpPower = 50
-        end
+    JumpButton.Text = JumpToggle and "High Jump: ON" or "High Jump: OFF"
+    JumpButton.BackgroundColor3 = JumpToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
+    if not JumpToggle and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.JumpPower = 50
     end
 end)
 
--- Deteksi Klik Tombol Fly
 FlyButton.MouseButton1Click:Connect(function()
     FlyToggle = not FlyToggle
-    if FlyToggle then
-        FlyButton.Text = "Fly: ON"
-        FlyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    else
-        FlyButton.Text = "Fly: OFF"
-        FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    end
+    FlyButton.Text = FlyToggle and "Fly: ON" or "Fly: OFF"
+    FlyButton.BackgroundColor3 = FlyToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
 end)
 
--- Deteksi Klik Tombol God Mode
 GodButton.MouseButton1Click:Connect(function()
     GodToggle = not GodToggle
+    GodButton.Text = GodToggle and "Bypass Laser: ON" or "Bypass Laser: OFF"
+    GodButton.BackgroundColor3 = GodToggle and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
     if GodToggle then
-        GodButton.Text = "God Mode: ON"
-        GodButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-        
-        -- Trik memutus script damage lokal dari peta (jika memungkinkan)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Animate") then
-            -- Beberapa tipe kill-brick gagal mendeteksi jika state diubah
-            LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-        end
-    else
-        GodButton.Text = "God Mode: OFF"
-        GodButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
-        end
+        BypassLasers()
     end
 end)
