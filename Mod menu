@@ -1,4 +1,4 @@
--- [[ SIMPLE ROBLOX MOD MENU - UPDATED ]] --
+-- [[ ROBLOX MOD MENU - TOWER ASSIST VERSION ]] --
 
 -- 1. MEMBUAT UI (ANTARMUKA)
 local ScreenGui = Instance.new("ScreenGui")
@@ -7,13 +7,12 @@ local Title = Instance.new("TextLabel")
 local SpeedButton = Instance.new("TextButton")
 local JumpButton = Instance.new("TextButton")
 local FlyButton = Instance.new("TextButton")
-local KillAllButton = Instance.new("TextButton") -- Tombol Baru
+local GodButton = Instance.new("TextButton") -- Tombol Anti Mati
 
--- Mengatur agar UI masuk ke CoreGui
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
--- Mengatur Kotak Menu Utama (Main Frame ditinggikan jadi 310 biar muat)
+-- Mengatur Kotak Menu Utama
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -28,7 +27,7 @@ Title.Parent = MainFrame
 Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Title.Size = UDim2.new(0, 200, 0, 40)
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "Delta Mod Menu"
+Title.Text = "Delta Helper Menu"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18
 
@@ -65,16 +64,16 @@ FlyButton.Text = "Fly: OFF"
 FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 FlyButton.TextSize = 16
 
--- Tombol Kill All (Baru)
-KillAllButton.Name = "KillAllButton"
-KillAllButton.Parent = MainFrame
-KillAllButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-KillAllButton.Position = UDim2.new(0, 10, 0, 240)
-KillAllButton.Size = UDim2.new(0, 180, 0, 40)
-KillAllButton.Font = Enum.Font.SourceSans
-KillAllButton.Text = "Kill All: OFF"
-KillAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-KillAllButton.TextSize = 16
+-- Tombol God Mode (Anti Mati)
+GodButton.Name = "GodButton"
+GodButton.Parent = MainFrame
+GodButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+GodButton.Position = UDim2.new(0, 10, 0, 240)
+GodButton.Size = UDim2.new(0, 180, 0, 40)
+GodButton.Font = Enum.Font.SourceSans
+GodButton.Text = "God Mode: OFF"
+GodButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+GodButton.TextSize = 16
 
 
 -- 2. LOGIKA DAN FUNGSI FITUR
@@ -84,7 +83,7 @@ local LocalPlayer = Players.LocalPlayer
 local SpeedToggle = false
 local JumpToggle = false
 local FlyToggle = false
-local KillAllToggle = false
+local GodToggle = false
 local BodyVelocity = nil
 
 game:GetService("RunService").RenderStepped:Connect(function()
@@ -118,31 +117,10 @@ game:GetService("RunService").RenderStepped:Connect(function()
                 BodyVelocity = nil
             end
         end
-
-        -- Logika Kill All (Mendekati musuh otomatis & menyerang jika memegang senjata)
-        if KillAllToggle and Character:FindFirstChild("HumanoidRootPart") then
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
-                    if player.Character.Humanoid.Health > 0 then
-                        -- Mengaktifkan tool/senjata otomatis jika ada di backpack
-                        local tool = LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-                        if tool then
-                            tool.Parent = Character
-                        end
-                        
-                        -- Berpindah ke posisi musuh secara instan
-                        Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
-                        
-                        -- Mengayunkan/mengaktifkan senjata jika memegang tool
-                        local equippedTool = Character:FindFirstChildOfClass("Tool")
-                        if equippedTool then
-                            equippedTool:Activate()
-                        end
-                        
-                        task.wait(0.1) -- Jeda waktu teleportasi agar tidak crash
-                    end
-                end
-            end
+        
+        -- Logika God Mode Sederhana (Mengunci nyawa agar tidak berkurang dari rintangan biasa)
+        if GodToggle then
+            Character.Humanoid.Health = Character.Humanoid.MaxHealth
         end
     end
 end)
@@ -189,14 +167,23 @@ FlyButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Deteksi Klik Tombol Kill All (Baru)
-KillAllButton.MouseButton1Click:Connect(function()
-    KillAllToggle = not KillAllToggle
-    if KillAllToggle then
-        KillAllButton.Text = "Kill All: ON"
-        KillAllButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0) -- Warna merah (tanda bahaya/menyerang)
+-- Deteksi Klik Tombol God Mode
+GodButton.MouseButton1Click:Connect(function()
+    GodToggle = not GodToggle
+    if GodToggle then
+        GodButton.Text = "God Mode: ON"
+        GodButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        
+        -- Trik memutus script damage lokal dari peta (jika memungkinkan)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Animate") then
+            -- Beberapa tipe kill-brick gagal mendeteksi jika state diubah
+            LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        end
     else
-        KillAllButton.Text = "Kill All: OFF"
-        KillAllButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        GodButton.Text = "God Mode: OFF"
+        GodButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
+        end
     end
 end)
